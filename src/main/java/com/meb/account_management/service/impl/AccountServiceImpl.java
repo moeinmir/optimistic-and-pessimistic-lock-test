@@ -1,4 +1,98 @@
 package com.meb.account_management.service.impl;
 
-public class AccountServiceImpl {
+import com.meb.account_management.constant.TransactionType;
+import com.meb.account_management.dto.ServiceResponse;
+import com.meb.account_management.dto.TransferMoneyRequestDto;
+import com.meb.account_management.dto.TransferMoneyResponseDto;
+import com.meb.account_management.model.Account;
+import com.meb.account_management.repository.AccountRepository;
+import com.meb.account_management.repository.TransactionRepository;
+import com.meb.account_management.service.AccountService;
+import com.meb.account_management.service.UserService;
+import jakarta.transaction.Transactional;
+import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class AccountServiceImpl implements AccountService {
+
+    private final UserService userService;
+
+    @Autowired
+    private AccountRepository accountRepository;
+    private TransactionRepository transactionRepository;
+
+    AccountServiceImpl(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Override
+    public ServiceResponse<Account.AccountDto> createNewAccount(String username){
+        val fetchedUser = userService.getUserByUserName(username);
+        if (!fetchedUser.isSuccess()){
+            val newAccount = Account.createNewAccount(fetchedUser.getResult());
+            accountRepository.save(newAccount);
+            return ServiceResponse.success(newAccount.getAccountInformation());
+        }
+        return ServiceResponse.failure();
+    }
+
+    @Override
+    public ServiceResponse<List<Account.AccountDto>> getAccountsByUser(String username){
+        val fetchedUser = userService.getUserByUserName(username);
+        if (!fetchedUser.isSuccess()){
+            val accounts = accountRepository.findByOwner(fetchedUser.getResult());
+            val accountDtos = accounts.stream().map(Account::getAccountInformation).toList();
+            return ServiceResponse.success(accountDtos);
+        }
+        return ServiceResponse.failure();
+    }
+
+    @Override
+    public ServiceResponse<Account>  getAccountById(Long accountId){
+        val optionalAccount = accountRepository.findById(accountId);
+        return ServiceResponse.fromOptional(optionalAccount);
+    }
+
+    @Transactional
+    @Override
+    public ServiceResponse<TransferMoneyResponseDto> transferMoney(TransferMoneyRequestDto transferMoneyRequestDto, String username) {
+        try {
+            val fetchedUser = userService.getUserByUserName(username);
+            if (!fetchedUser.isSuccess()) {
+                throw new RuntimeException();
+            }
+            val fetchedSourceAccount = getAccountById(transferMoneyRequestDto.getSourceAccountId());
+            if (!fetchedSourceAccount.isSuccess()) {
+                throw new RuntimeException();
+            }
+            val fetchedTargetAccount = getAccountById(transferMoneyRequestDto.getTargetAccountId());
+            if (!fetchedTargetAccount.isSuccess()) {
+                throw new RuntimeException();
+            }
+            val sourceTransaction = fetchedSourceAccount.getResult().addTransaction(transferMoneyRequestDto.getAmount(), TransactionType.DEBIT, fetchedUser.getResult().getUserInformation().id);
+            val targetTransaction = fetchedTargetAccount.getResult().addTransaction(transferMoneyRequestDto.getAmount(), TransactionType.CREDIT, fetchedUser.getResult().getUserInformation().id);
+            transactionRepository.save(sourceTransaction);
+            transactionRepository.save(targetTransaction);
+            accountRepository.save(fetchedSourceAccount.getResult());
+            accountRepository.save(fetchedTargetAccount.getResult());
+            val responseDto = TransferMoneyResponseDto.builder()
+                    .sourceAccountId(fetchedSourceAccount.getResult().getAccountInformation().id)
+                    .targetAccountId(fetchedTargetAccount.getResult().getAccountInformation().id)
+                    .amount(transferMoneyRequestDto.getAmount())
+                    .targetAccountId(fetchedTargetAccount.getResult().getId())
+                    .amount(transferMoneyRequestDto.getAmount())
+                    .sourceAccountOwnerId(fetchedSourceAccount.getResult().getAccountInformation().getOwnerId())
+                    .targetAccountOwnerId(fetchedTargetAccount.getResult().getAccountInformation().getOwnerId())
+                    .sourceAccountRemainingBalance(fetchedSourceAccount.getResult().getAccountInformation().getBalance()).build();
+            return ServiceResponse.success(responseDto);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            return ServiceResponse.failure();
+        }
+    }
 }
+

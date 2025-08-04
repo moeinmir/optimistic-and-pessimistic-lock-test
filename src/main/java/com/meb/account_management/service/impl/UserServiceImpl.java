@@ -1,6 +1,7 @@
 package com.meb.account_management.service.impl;
 
 import com.meb.account_management.dto.LoginResponseDto;
+import com.meb.account_management.dto.ServiceResponse;
 import com.meb.account_management.model.CustomUser;
 import com.meb.account_management.repository.CustomUserRepository;
 import com.meb.account_management.service.UserService;
@@ -29,34 +30,44 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CustomUser register(String firstName,String lastname, String username, String password) {
+    public ServiceResponse<CustomUser> getUserByUserName(String username) {
+        Optional<CustomUser> optionalCustomUser = customUserRepository.findByUsername(username);
+        return ServiceResponse.fromOptional(optionalCustomUser);
+    }
+
+    @Override
+    public ServiceResponse<CustomUser> register(String firstName,String lastname, String username, String password) {
+        val existingUser = getUserByUserName(username);
+        if (existingUser.isSuccess()){
+            return ServiceResponse.failure();
+        }
         CustomUser user = CustomUser.createNewUser(firstName,lastname, username, passwordEncoder.encode(password));
         customUserRepository.save(user);
-        return user;
-    }
-
-    public Optional<CustomUser> findByUserName(String username) {
-        return customUserRepository.findByUsername(username);
+        return ServiceResponse.success(user);
     }
 
     @Override
-    public LoginResponseDto login(String userName, String password){
-        val user = findByUserName(userName);
-        if (user.isPresent()){
-            val fetchedUser = user.get();
-            if (fetchedUser.doesPasswordMatch(password,passwordEncoder)){
-                val accessToken = jwtUtils.generateAccessToken(fetchedUser);
-                val refreshToken = jwtUtils.generateRefreshToken(fetchedUser);
-                return LoginResponseDto.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+    public  ServiceResponse<LoginResponseDto> login(String userName, String password){
+        val fetchedUser = getUserByUserName(userName);
+        if (fetchedUser.isSuccess()){
+            val user = fetchedUser.getResult();
+            if (user.doesPasswordMatch(password,passwordEncoder)){
+                val accessToken = jwtUtils.generateAccessToken(user);
+                val refreshToken = jwtUtils.generateRefreshToken(user);
+                return ServiceResponse.success(LoginResponseDto.builder().accessToken(accessToken).refreshToken(refreshToken).build());
             }
         }
-        return LoginResponseDto.builder().build();
+        return ServiceResponse.failure();
     }
 
     @Override
-    public CustomUser.UserDto getUserInformationWithUsername(String userName) {
-        val user = findByUserName(userName);
-        return user.map(CustomUser::getUserInformation).orElse(null);
+    public ServiceResponse<CustomUser.UserDto> getUserInformationWithUsername(String userName) {
+        val fetchedUser = getUserByUserName(userName);
+        if (fetchedUser.isSuccess()){
+            val userInfo = fetchedUser.getResult().getUserInformation();
+            return ServiceResponse.success(userInfo);
+        }
+        return ServiceResponse.failure();
     }
 }
 

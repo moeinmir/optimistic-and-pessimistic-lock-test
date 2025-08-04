@@ -50,6 +50,7 @@ class HTTPRequestConfigurationAndPermissionHandler {
                         .requestMatchers(
                             "/auth/**"
                         ).permitAll()
+                        .requestMatchers("/account/**").authenticated()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()

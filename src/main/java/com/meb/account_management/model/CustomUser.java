@@ -11,19 +11,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @NoArgsConstructor
 @Slf4j
 @Getter
-//public class CustomUser implements UserDetails {
-
 public class CustomUser  {
 
-
-    //    @SequenceGenerator(name = "globalesequence", sequenceName = "Global_SEQ",allocationSize = 1)
-//    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "globalsequence")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String firstName;
     private String lastName;
+
+    @Column(unique = true)
     private String username;
 
     public String password;
@@ -50,7 +47,4 @@ public class CustomUser  {
         return UserDto.builder().id(this.id).fistName(this.firstName).lastName(this.lastName).username(this.username).build();
     }
 
-    public Long getUserId(){
-        return this.id;
-    }
 }
