@@ -15,14 +15,12 @@
 
 ## Project Structure:
 - Web API section
-- UI section (simple and user-friendly design)
 
 ## Technologies Used:
 - Java
 - Spring Boot
 - Spring MVC
 - Spring Data JPA
-- React (for frontend)
 - H2 Database
 - Maven (for dependency management)
 
