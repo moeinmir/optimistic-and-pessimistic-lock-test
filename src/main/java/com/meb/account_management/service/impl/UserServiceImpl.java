@@ -4,13 +4,12 @@ import com.meb.account_management.dto.LoginResponseDto;
 import com.meb.account_management.dto.ServiceResponse;
 import com.meb.account_management.model.CustomUser;
 import com.meb.account_management.repository.CustomUserRepository;
+import com.meb.account_management.security.JwtUtils;
 import com.meb.account_management.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.meb.account_management.security.JwtUtils;
 
 import java.util.Optional;
 
@@ -18,15 +17,13 @@ import java.util.Optional;
 @Slf4j
 public class UserServiceImpl implements UserService {
     private final CustomUserRepository customUserRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtils jwtUtils;
-
-    public UserServiceImpl(CustomUserRepository customUserRepository) {
+    public UserServiceImpl(CustomUserRepository customUserRepository,  PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.customUserRepository = customUserRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     @Override

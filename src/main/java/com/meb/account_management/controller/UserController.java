@@ -9,16 +9,19 @@ import com.meb.account_management.repository.CustomUserRepository;
 import com.meb.account_management.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.apache.catalina.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/auth/")
 public class UserController {
 
     private final UserService userService;
-    private final CustomUserRepository customUserRepository;
+
+    UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("register")
     public ServiceResponse<CustomUser.UserDto> registerMe(@RequestBody RegisterRequestDto registerRequestDto){

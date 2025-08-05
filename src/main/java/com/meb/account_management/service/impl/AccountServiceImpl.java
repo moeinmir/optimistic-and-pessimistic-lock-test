@@ -11,7 +11,6 @@ import com.meb.account_management.service.AccountService;
 import com.meb.account_management.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.val;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -19,19 +18,19 @@ import java.util.List;
 public class AccountServiceImpl implements AccountService {
 
     private final UserService userService;
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
 
-    @Autowired
-    private AccountRepository accountRepository;
-    private TransactionRepository transactionRepository;
-
-    AccountServiceImpl(UserService userService) {
+    AccountServiceImpl(UserService userService, AccountRepository accountRepository, TransactionRepository transactionRepository) {
         this.userService = userService;
+        this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     @Override
     public ServiceResponse<Account.AccountDto> createNewAccount(String username){
         val fetchedUser = userService.getUserByUserName(username);
-        if (!fetchedUser.isSuccess()){
+        if (fetchedUser.isSuccess()){
             val newAccount = Account.createNewAccount(fetchedUser.getResult());
             accountRepository.save(newAccount);
             return ServiceResponse.success(newAccount.getAccountInformation());
@@ -42,7 +41,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public ServiceResponse<List<Account.AccountDto>> getAccountsByUser(String username){
         val fetchedUser = userService.getUserByUserName(username);
-        if (!fetchedUser.isSuccess()){
+        if (fetchedUser.isSuccess()){
             val accounts = accountRepository.findByOwner(fetchedUser.getResult());
             val accountDtos = accounts.stream().map(Account::getAccountInformation).toList();
             return ServiceResponse.success(accountDtos);

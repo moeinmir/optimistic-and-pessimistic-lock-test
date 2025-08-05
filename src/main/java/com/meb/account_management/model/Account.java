@@ -29,7 +29,11 @@ public class Account {
     private CustomUser owner;
 
     public static Account createNewAccount(CustomUser owner) {
-        return Account.builder().balance(BigDecimal.ZERO).owner(owner).isLocked(false).build();
+        return Account.builder().balance(BigDecimal.ZERO).owner(owner).isLocked(false).version(0).build();
+    }
+
+    public static Account createNewAccountWithBalanceForTheTest(CustomUser owner) {
+        return Account.builder().balance(BigDecimal.valueOf(10000)).owner(owner).isLocked(false).version(0).build();
     }
 
     public Transaction addTransaction(BigDecimal amount, TransactionType type, Long requesterId) {
@@ -38,7 +42,7 @@ public class Account {
             if(!this.owner.getUserInformation().id.equals(requesterId)){
                 return null;
             }
-            if (this.balance.compareTo(amount) > 0){
+            if (this.balance.compareTo(amount) < 0){
                 return null;
             }
             this.balance = this.balance.subtract(amount);
@@ -46,7 +50,7 @@ public class Account {
         if (type == TransactionType.CREDIT){
             this.balance = this.balance.add(amount);
         }
-        return Transaction.builder().amount(amount).type(type).account(this).build();
+        return Transaction.builder().type(type).amount(amount).type(type).account(this).build();
     }
 
     @Builder
@@ -62,5 +66,7 @@ public class Account {
     public AccountDto getAccountInformation(){
         return AccountDto.builder().id(id).balance(this.balance).isLocked(this.isLocked).ownerId(this.owner.getUserInformation().id).build();
     }
+
+
 
 }
