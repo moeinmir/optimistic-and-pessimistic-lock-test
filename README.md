@@ -123,3 +123,24 @@ Optional<Account> findByIdWithPessimisticLock(@Param("id") Long id);
     }
 
 ```
+
+
+## Account Management:
+- View list of bank accounts
+- Add a new account
+- Edit account information
+- Delete an account
+
+
+
+## Transaction Management:
+- View transaction history
+- Add a new transaction (deposit/withdrawal)
+- Check account balance
+
+
+
+## User Management:
+- User registration and login
+- View their own accounts
+

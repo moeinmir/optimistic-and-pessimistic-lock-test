@@ -6,6 +6,8 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -53,6 +55,9 @@ public class Account {
         return Transaction.builder().type(type).amount(amount).type(type).account(this).build();
     }
 
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Transaction> transactions;
+
     @Builder
     @Getter
     @Setter
@@ -67,6 +72,13 @@ public class Account {
         return AccountDto.builder().id(id).balance(this.balance).isLocked(this.isLocked).ownerId(this.owner.getUserInformation().id).build();
     }
 
+    public List<Transaction.TransactionDto> getAccountTransactions(Long requesterId) {
 
-
+        if(requesterId.equals(this.owner.getUserInformation().id)){
+            return this.transactions.stream()
+                    .map(Transaction::getTransactionInformation)
+                    .collect(Collectors.toList());
+        }
+        return null;
+    }
 }

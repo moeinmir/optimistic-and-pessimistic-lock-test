@@ -4,6 +4,7 @@ import com.meb.account_management.constant.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 
 import java.math.BigDecimal;
 
@@ -27,4 +28,23 @@ public class Transaction {
     Account account;
     BigDecimal amount;
 
+    @Setter
+    @Getter
+    @Builder
+    public static class TransactionDto {
+
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        public Long id;
+
+        @Enumerated(EnumType.STRING)
+        TransactionType type;
+
+        BigDecimal amount;
+    }
+
+    public TransactionDto getTransactionInformation(){
+        return TransactionDto.builder().id(this.id).amount(this.amount).type(this.type).build();
+    }
 }
+

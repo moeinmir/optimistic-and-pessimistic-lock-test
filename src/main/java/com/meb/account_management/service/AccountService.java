@@ -4,6 +4,7 @@ import com.meb.account_management.dto.ServiceResponse;
 import com.meb.account_management.dto.TransferMoneyRequestDto;
 import com.meb.account_management.dto.TransferMoneyResponseDto;
 import com.meb.account_management.model.Account;
+import com.meb.account_management.model.Transaction;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface AccountService {
 
     @Transactional
     ServiceResponse<TransferMoneyResponseDto> transferMoney(TransferMoneyRequestDto transferMoneyRequestDto, String username);
+
+    ServiceResponse<List<Transaction.TransactionDto>> getAccountTransactionHistoryByAccountId(Long accountId, String username);
 }

@@ -5,6 +5,7 @@ import com.meb.account_management.dto.ServiceResponse;
 import com.meb.account_management.dto.TransferMoneyRequestDto;
 import com.meb.account_management.dto.TransferMoneyResponseDto;
 import com.meb.account_management.model.Account;
+import com.meb.account_management.model.Transaction;
 import com.meb.account_management.repository.AccountRepository;
 import com.meb.account_management.repository.TransactionRepository;
 import com.meb.account_management.service.AccountService;
@@ -75,8 +76,6 @@ public class AccountServiceImpl implements AccountService {
             val targetTransaction = fetchedTargetAccount.getResult().addTransaction(transferMoneyRequestDto.getAmount(), TransactionType.CREDIT, fetchedUser.getResult().getUserInformation().id);
             transactionRepository.save(sourceTransaction);
             transactionRepository.save(targetTransaction);
-            accountRepository.save(fetchedSourceAccount.getResult());
-            accountRepository.save(fetchedTargetAccount.getResult());
             val responseDto = TransferMoneyResponseDto.builder()
                     .sourceAccountId(fetchedSourceAccount.getResult().getAccountInformation().id)
                     .targetAccountId(fetchedTargetAccount.getResult().getAccountInformation().id)
@@ -93,5 +92,20 @@ public class AccountServiceImpl implements AccountService {
             return ServiceResponse.failure();
         }
     }
+
+    @Override
+    public ServiceResponse<List<Transaction.TransactionDto>> getAccountTransactionHistoryByAccountId(Long accountId, String username){
+        ServiceResponse<Account> fetchedAccount =  getAccountById(accountId);
+        val fetchedUser = userService.getUserByUserName(username);
+        if (!fetchedUser.isSuccess()) {
+            throw new RuntimeException();
+        }
+        if (fetchedAccount.isSuccess()){
+            val account = fetchedAccount.getResult();
+            return ServiceResponse.success(account.getAccountTransactions(fetchedUser.getResult().getUserInformation().id));
+        }
+        return ServiceResponse.failure();
+    }
+
 }
 

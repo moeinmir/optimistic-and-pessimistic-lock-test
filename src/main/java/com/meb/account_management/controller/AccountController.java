@@ -4,6 +4,7 @@ import com.meb.account_management.dto.ServiceResponse;
 import com.meb.account_management.dto.TransferMoneyRequestDto;
 import com.meb.account_management.dto.TransferMoneyResponseDto;
 import com.meb.account_management.model.Account;
+import com.meb.account_management.model.Transaction;
 import com.meb.account_management.service.AccountService;
 import lombok.val;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,6 +38,12 @@ public class AccountController {
     public ServiceResponse<TransferMoneyResponseDto>  transferMoney(@RequestBody TransferMoneyRequestDto transferMoneyRequestDto){
         val username = SecurityContextHolder.getContext().getAuthentication().getName();
         return accountService.transferMoney(transferMoneyRequestDto,username);
+    }
+
+    @PostMapping("get-account-transaction")
+    public ServiceResponse<List<Transaction.TransactionDto>>  transferMoney(@RequestParam Long accountId){
+        val username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return accountService.getAccountTransactionHistoryByAccountId(accountId,username);
     }
 
 }
