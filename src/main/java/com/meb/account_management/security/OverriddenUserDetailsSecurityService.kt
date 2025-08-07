@@ -35,7 +35,8 @@ class OverriddenUserDetailsSecurityService : UserDetailsService {
 class SecurityUtils {
     companion object {
         fun convert(user: CustomUser): User {
-            val authorities = listOf(SimpleGrantedAuthority("authorityone"),SimpleGrantedAuthority("authoritytwo"))
+            val rolse = user.roles
+            val authorities = rolse.map { role -> SimpleGrantedAuthority(role.toString()) }
             val userInformation = user.userInformation
             return User(userInformation.username,user.password, authorities)
         }

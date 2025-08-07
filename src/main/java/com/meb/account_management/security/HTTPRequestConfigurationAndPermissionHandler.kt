@@ -51,6 +51,7 @@ class HTTPRequestConfigurationAndPermissionHandler {
                             "/auth/**"
                         ).permitAll()
                         .requestMatchers("/account/**").authenticated()
+                        .requestMatchers("/transaction/**").hasAuthority("ADMIN")
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()

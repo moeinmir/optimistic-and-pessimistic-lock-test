@@ -1,5 +1,6 @@
 package com.meb.account_management.model;
 
+import com.meb.account_management.constant.Role;
 import com.meb.account_management.constant.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -38,10 +40,10 @@ public class Account {
         return Account.builder().balance(BigDecimal.valueOf(10000)).owner(owner).isLocked(false).version(0).build();
     }
 
-    public Transaction addTransaction(BigDecimal amount, TransactionType type, Long requesterId) {
+    public Transaction addTransaction(BigDecimal amount, TransactionType type, Long requesterId, Set<Role> requesterRoles) {
 
         if (type == TransactionType.DEBIT){
-            if(!this.owner.getUserInformation().id.equals(requesterId)){
+            if(!this.owner.getUserInformation().id.equals(requesterId) && !requesterRoles.contains(Role.ADMIN) ){
                 return null;
             }
             if (this.balance.compareTo(amount) < 0){

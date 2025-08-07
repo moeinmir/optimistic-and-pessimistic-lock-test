@@ -1,9 +1,12 @@
 package com.meb.account_management.model;
 
+import com.meb.account_management.constant.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Set;
 
 @Entity
 @Builder
@@ -24,6 +27,11 @@ public class CustomUser  {
     private String username;
 
     public String password;
+
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    public Set<Role> roles;
 
     public boolean doesPasswordMatch(String password, PasswordEncoder passwordEncoder) {
         return passwordEncoder.matches( password, this.password );
@@ -46,5 +54,6 @@ public class CustomUser  {
     public UserDto getUserInformation(){
         return UserDto.builder().id(this.id).fistName(this.firstName).lastName(this.lastName).username(this.username).build();
     }
+
 
 }

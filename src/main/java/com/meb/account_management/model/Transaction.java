@@ -40,7 +40,7 @@ public class Transaction {
         @Enumerated(EnumType.STRING)
         TransactionType type;
 
-        BigDecimal amount;
+        public BigDecimal amount;
     }
 
     public TransactionDto getTransactionInformation(){

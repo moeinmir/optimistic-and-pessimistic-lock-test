@@ -72,8 +72,8 @@ public class AccountServiceImpl implements AccountService {
             if (!fetchedTargetAccount.isSuccess()) {
                 throw new RuntimeException();
             }
-            val sourceTransaction = fetchedSourceAccount.getResult().addTransaction(transferMoneyRequestDto.getAmount(), TransactionType.DEBIT, fetchedUser.getResult().getUserInformation().id);
-            val targetTransaction = fetchedTargetAccount.getResult().addTransaction(transferMoneyRequestDto.getAmount(), TransactionType.CREDIT, fetchedUser.getResult().getUserInformation().id);
+            val sourceTransaction = fetchedSourceAccount.getResult().addTransaction(transferMoneyRequestDto.getAmount(), TransactionType.DEBIT, fetchedUser.getResult().getUserInformation().id,fetchedUser.getResult().roles);
+            val targetTransaction = fetchedTargetAccount.getResult().addTransaction(transferMoneyRequestDto.getAmount(), TransactionType.CREDIT, fetchedUser.getResult().getUserInformation().id,fetchedUser.getResult().roles);
             transactionRepository.save(sourceTransaction);
             transactionRepository.save(targetTransaction);
             val responseDto = TransferMoneyResponseDto.builder()
@@ -106,6 +106,14 @@ public class AccountServiceImpl implements AccountService {
         }
         return ServiceResponse.failure();
     }
+
+
+
+
+    public void getAccountsByAdmin(){}
+    public void addAccountByAdmin(){}
+    public void editAccountByAdmin(){}
+    public void deleteAccountByAdmin(){}
 
 }
 
