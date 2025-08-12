@@ -1,5 +1,6 @@
 package com.meb.account_management.service.impl;
 
+import com.meb.account_management.aop.LogExecutionTime;
 import com.meb.account_management.dto.LoginResponseDto;
 import com.meb.account_management.dto.ServiceResponse;
 import com.meb.account_management.model.CustomUser;
@@ -8,9 +9,9 @@ import com.meb.account_management.security.JwtUtils;
 import com.meb.account_management.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.slf4j.MDC;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
 @Service
@@ -45,6 +46,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public  ServiceResponse<LoginResponseDto> login(String userName, String password){
+        val requestId = MDC.get("requestId");
         val fetchedUser = getUserByUserName(userName);
         if (fetchedUser.isSuccess()){
             val user = fetchedUser.getResult();
@@ -57,6 +59,7 @@ public class UserServiceImpl implements UserService {
         return ServiceResponse.failure();
     }
 
+    @LogExecutionTime
     @Override
     public ServiceResponse<CustomUser.UserDto> getUserInformationWithUsername(String userName) {
         val fetchedUser = getUserByUserName(userName);

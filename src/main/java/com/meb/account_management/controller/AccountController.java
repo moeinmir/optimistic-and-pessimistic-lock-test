@@ -46,4 +46,9 @@ public class AccountController {
         return accountService.getAccountTransactionHistoryByAccountId(accountId,username);
     }
 
+    @DeleteMapping("")
+    public ServiceResponse<Long> deleteAccount(@RequestParam Long accountId){
+        return accountService.deleteAccountByAdmin(accountId);
+    }
+
 }

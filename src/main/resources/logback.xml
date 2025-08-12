@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty name="appName" source="spring.application.name" defaultValue="spring-boot-app"/>
+    <springProperty name="logstashHost" source="logging.logstash.host" defaultValue="localhost"/>
+    <springProperty name="logstashPort" source="logging.logstash.port" defaultValue="5044"/>
+    <property name="logPattern"
+              value="%d{yyyy-MM-dd HH:mm:ss}[%mdc{requestId}] [%thread] %-5level %logger{36} - %msg%n"/>
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender>
+    <!-- File Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>log/app.%d{yyyy-ww}.log</fileNamePattern>
+            <maxHistory>4</maxHistory>
+        </rollingPolicy>
+        >
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender>
+    <!-- Logstash Appender -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>127.0.0.1:5044</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app":"${appName}"}</customFields>
+            <encoder>
+                <pattern>${logPattern}</pattern>
+            </encoder>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+<!--        <appender-ref ref="LOGSTASH"/>-->
+    </root>
+</configuration>

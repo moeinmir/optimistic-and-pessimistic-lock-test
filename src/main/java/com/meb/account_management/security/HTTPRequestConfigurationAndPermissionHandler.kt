@@ -50,6 +50,7 @@ class HTTPRequestConfigurationAndPermissionHandler {
                         .requestMatchers(
                             "/auth/**"
                         ).permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/account/").hasAuthority("ADMIN")
                         .requestMatchers("/account/**").authenticated()
                         .requestMatchers("/transaction/**").hasAuthority("ADMIN")
                         .requestMatchers("/error").permitAll()

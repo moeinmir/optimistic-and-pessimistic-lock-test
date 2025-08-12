@@ -3,7 +3,6 @@ package com.meb.account_management.controller;
 import com.meb.account_management.dto.AddTransactionRequestDto;
 import com.meb.account_management.dto.AddTransactionResponseDto;
 import com.meb.account_management.dto.ServiceResponse;
-import com.meb.account_management.model.Transaction;
 import com.meb.account_management.service.TransactionService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,4 +24,6 @@ public class TransactionController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return transactionService.addTransactionByAdmin(addTransactionRequestDto,username);
     }
+
+
 }

@@ -107,13 +107,17 @@ public class AccountServiceImpl implements AccountService {
         return ServiceResponse.failure();
     }
 
-
-
-
     public void getAccountsByAdmin(){}
     public void addAccountByAdmin(){}
     public void editAccountByAdmin(){}
-    public void deleteAccountByAdmin(){}
+
+    @Override
+    public ServiceResponse<Long> deleteAccountByAdmin(Long accountId){
+        ServiceResponse<Account> fetchedAccount = getAccountById(accountId);
+        if (!fetchedAccount.isSuccess()) {return ServiceResponse.failure();}
+        accountRepository.delete(fetchedAccount.getResult());
+        return ServiceResponse.success(accountId);
+    }
 
 }
 

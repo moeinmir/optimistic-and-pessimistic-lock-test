@@ -21,4 +21,6 @@ public interface AccountService {
     ServiceResponse<TransferMoneyResponseDto> transferMoney(TransferMoneyRequestDto transferMoneyRequestDto, String username);
 
     ServiceResponse<List<Transaction.TransactionDto>> getAccountTransactionHistoryByAccountId(Long accountId, String username);
+
+    ServiceResponse<Long> deleteAccountByAdmin(Long accountId);
 }
