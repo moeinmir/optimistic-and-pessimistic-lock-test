@@ -1,5 +1,6 @@
 package com.meb.account_management;
 
+import com.meb.account_management.constant.Role;
 import com.meb.account_management.constant.TransactionType;
 import com.meb.account_management.dto.ServiceResponse;
 import com.meb.account_management.dto.TransferMoneyRequestDto;
@@ -16,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,6 +47,8 @@ class AccountManagementApplicationTests {
 
     @Test
     void testCreateAccount() throws InterruptedException {
+        Set<Role> roles = new HashSet<Role>();
+        roles.add(Role.ADMIN);
         CustomUser userWithMoney = CustomUser.createNewUser("userwithmoney", "userwithmoney", "userwithmoney", "password");
         customUserRepository.save(userWithMoney);
         Account accountWithMoney = Account.createNewAccountWithBalanceForTheTest(userWithMoney);
@@ -56,7 +61,7 @@ class AccountManagementApplicationTests {
         accountRepository.save(secondAccountWithoutMoney);
         Long userWithMoneyId = userWithMoney.getUserInformation().getId();
         BigDecimal firstAccountWithMoneyBalanceBefore = accountWithMoney.getAccountInformation().getBalance();
-        Transaction pureDebitOnFirstAccountWithMoney = accountWithMoney.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, userWithMoneyId);
+        Transaction pureDebitOnFirstAccountWithMoney = accountWithMoney.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, userWithMoneyId,roles);
         transactionRepository.save(pureDebitOnFirstAccountWithMoney);
         accountRepository.save(accountWithoutMoney);
         BigDecimal firstAccountWithMoneyBalanceAfter = accountWithMoney.getAccountInformation().getBalance();
@@ -145,6 +150,8 @@ class AccountManagementApplicationTests {
 
     @Test
     public void testOptimisticLockPreventingSaveWhenItShould() throws InterruptedException {
+        Set<Role> roles = new HashSet<Role>();
+        roles.add(Role.ADMIN);
         CustomUser optUser = CustomUser.createNewUser("optuser", "optuser", "optuser", "password");
         customUserRepository.save(optUser);
         Account optAccount = Account.createNewAccountWithBalanceForTheTest(optUser);
@@ -156,7 +163,7 @@ class AccountManagementApplicationTests {
         Thread firstThread = new Thread(() -> {
             Account optAccountInFirstThread = accountRepository.findById(optAccountId).orElse(null);
             synchronized (lock) {
-                Transaction transactionInFirstThread = optAccountInFirstThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId);
+                Transaction transactionInFirstThread = optAccountInFirstThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId,roles);
                 transactionInFirstThreadDone.set(true);
                 lock.notify();
                 try {
@@ -184,7 +191,7 @@ class AccountManagementApplicationTests {
                         throw new RuntimeException(e);
                     }
                 }
-                Transaction transactionInSecondThread = optAccountInSecondThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId);
+                Transaction transactionInSecondThread = optAccountInSecondThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId,roles);
                 transactionRepository.save(transactionInSecondThread);
                 accountRepository.save(optAccountInSecondThread);
                 System.out.println("transaction in second thread has been saved as we expected");
@@ -200,6 +207,8 @@ class AccountManagementApplicationTests {
 
     @Test
     public void testOptimisticLockNotPreventingSaveWhenItShould() throws InterruptedException {
+        Set<Role> roles = new HashSet<Role>();
+        roles.add(Role.ADMIN);
         CustomUser optUser = CustomUser.createNewUser("optuser", "optuser", "optuser", "password");
         customUserRepository.save(optUser);
         Account optAccount = Account.createNewAccountWithBalanceForTheTest(optUser);
@@ -212,7 +221,7 @@ class AccountManagementApplicationTests {
         Thread firstThread = new Thread(() -> {
             Account optAccountInFirstThread = accountRepository.findById(optAccountId).orElse(null);
             synchronized (lock) {
-                Transaction transactionInFirstThread = optAccountInFirstThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId);
+                Transaction transactionInFirstThread = optAccountInFirstThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId,roles);
                 transactionRepository.save(transactionInFirstThread);
                 accountRepository.save(optAccountInFirstThread);
                 System.out.println("transaction in first thread has been saved as we expected");
@@ -236,7 +245,7 @@ class AccountManagementApplicationTests {
             }
             Account optAccountInSecondThread = accountRepository.findById(optAccountId).orElse(null);
             synchronized (lock) {
-                Transaction transactionInSecondThread = optAccountInSecondThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId);
+                Transaction transactionInSecondThread = optAccountInSecondThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId,roles);
                 transactionRepository.save(transactionInSecondThread);
                 accountRepository.save(optAccountInSecondThread);
                 System.out.println("transaction in second thread has been saved as we expected");
@@ -252,6 +261,8 @@ class AccountManagementApplicationTests {
 
     @Test
     public void testPessimisticLockWithWithExecutor() throws InterruptedException {
+        Set<Role> roles = new HashSet<Role>();
+        roles.add(Role.ADMIN);
         CustomUser optUser = CustomUser.createNewUser("optuser", "optuser", "optuser", "password");
         customUserRepository.save(optUser);
         Account optAccount = Account.createNewAccountWithBalanceForTheTest(optUser);
@@ -262,7 +273,7 @@ class AccountManagementApplicationTests {
         Runnable firstTask = () -> {
             System.out.println("account balance after two transaction");
             Account optAccountInFirstThread = accountRepository.findByIdWithPessimisticLock(optAccountId).orElse(null);
-            Transaction transactionInFirstThread = optAccountInFirstThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId);
+            Transaction transactionInFirstThread = optAccountInFirstThread.addTransaction(BigDecimal.ONE, TransactionType.DEBIT, optUserId,roles);
             transactionRepository.save(transactionInFirstThread);
             accountRepository.save(optAccountInFirstThread);
         };
